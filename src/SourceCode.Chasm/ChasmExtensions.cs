@@ -5,34 +5,53 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 namespace SourceCode.Chasm
 {
     public static class ChasmExtensions
     {
-        #region Methods
+        #region TreeMap
 
-        public static TreeNodeMap? Merge(this TreeNodeMap? first, TreeNodeMap? second)
+        public static TreeMap? Merge(this TreeMap? first, TreeMap? second)
         {
             if (!first.HasValue) return second;
             if (!second.HasValue) return first;
             return first.Value.Merge(second.Value);
         }
 
-        public static TreeNodeMap? Merge(this TreeNodeMap? first, ICollection<TreeNode> second)
+        public static TreeMap? Merge(this TreeMap? first, ICollection<TreeMapNode> second)
         {
-            if (!first.HasValue) return new TreeNodeMap(second);
+            if (!first.HasValue) return new TreeMap(second);
             return first.Value.Merge(second);
         }
 
-        public static TreeNodeMap? Merge(this TreeNodeMap? first, TreeNode second)
+        public static TreeMap? Merge(this TreeMap? first, IEnumerable<TreeMapNode> second)
         {
-            if (!first.HasValue) return new TreeNodeMap(second);
+            if (!first.HasValue) return new TreeMap(second);
             return first.Value.Merge(second);
         }
 
-        public static bool TryGetValue(this TreeNodeMap? map, string key, out TreeNode value)
+        public static TreeMap? Merge(this TreeMap? first, TreeMapNode second)
+        {
+            if (!first.HasValue) return new TreeMap(second);
+            return first.Value.Merge(second);
+        }
+
+        public static TreeMap? Merge(this TreeMap? first, string name, NodeKind kind, Sha1 sha1)
+        {
+            if (!first.HasValue) return new TreeMap(new TreeMapNode(name, kind, sha1));
+            return first.Value.Merge(name, kind, sha1);
+        }
+
+        public static TreeMap? Merge(this TreeMap? first, string name, TreeRef treeRef)
+        {
+            if (!first.HasValue) return new TreeMap(new TreeMapNode(name, treeRef));
+            return first.Value.Merge(name, treeRef);
+        }
+
+        public static bool TryGetValue(this TreeMap? map, string key, out TreeMapNode value)
         {
             if (!map.HasValue)
             {
@@ -42,7 +61,7 @@ namespace SourceCode.Chasm
             return map.Value.TryGetValue(key, out value);
         }
 
-        public static bool TryGetValue(this TreeNodeMap? map, string key, NodeKind kind, out TreeNode value)
+        public static bool TryGetValue(this TreeMap? map, string key, NodeKind kind, out TreeMapNode value)
         {
             if (!map.HasValue)
             {

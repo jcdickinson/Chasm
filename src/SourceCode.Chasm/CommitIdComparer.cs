@@ -5,6 +5,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 namespace SourceCode.Chasm
@@ -38,6 +39,18 @@ namespace SourceCode.Chasm
         #endregion
 
         #region IEqualityComparer
+
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
+        [Obsolete("Use GetHashCode(CommitId) to get the hash code for a CommitId.", true)]
+        public override int GetHashCode() =>
+            throw new InvalidOperationException();
+
+        [Obsolete("Use Equals(CommitId, CommitId) to check two CommitId values for equality.")]
+        public override bool Equals(object obj) =>
+            throw new InvalidOperationException();
+
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
         /// <inheritdoc/>
         public abstract bool Equals(CommitId x, CommitId y);

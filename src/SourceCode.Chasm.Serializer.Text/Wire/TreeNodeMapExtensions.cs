@@ -15,7 +15,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
     {
         #region Methods
 
-        public static string Convert(this TreeNodeMap model)
+        public static string Convert(this TreeMap model)
         {
             switch (model.Count)
             {
@@ -43,14 +43,14 @@ namespace SourceCode.Chasm.IO.Text.Wire
             }
         }
 
-        public static TreeNodeMap ConvertTree(this string wire)
+        public static TreeMap ConvertTree(this string wire)
         {
             if (string.IsNullOrWhiteSpace(wire)) return default;
 
             var tokens = wire.Split('\n', StringSplitOptions.None);
-            if (tokens.Length == 0) return TreeNodeMap.Empty;
+            if (tokens.Length == 0) return TreeMap.Empty;
 
-            var nodes = new List<TreeNode>(tokens.Length);
+            var nodes = new List<TreeMapNode>(tokens.Length);
             for (var i = 0; i < tokens.Length; i++)
             {
                 var text = tokens[i].Trim();
@@ -60,7 +60,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
                 nodes.Add(node);
             }
 
-            var model = new TreeNodeMap(nodes);
+            var model = new TreeMap(nodes);
             return model;
         }
 

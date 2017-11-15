@@ -19,13 +19,21 @@ namespace SourceCode.Chasm.Tests.TestObjects
 
         public abstract CommitId DeserializeCommitId(ReadOnlySpan<byte> span);
 
-        public abstract TreeNodeMap DeserializeTree(ReadOnlySpan<byte> span);
+        public abstract TreeList DeserializeTreeList(ReadOnlySpan<byte> span);
 
-        public abstract BufferSession Serialize(TreeNodeMap model);
+        public abstract TreeMap DeserializeTreeMap(ReadOnlySpan<byte> span);
+
+        public abstract TreeSet DeserializeTreeSet(ReadOnlySpan<byte> span);
+
+        public abstract BufferSession Serialize(TreeMap model);
 
         public abstract BufferSession Serialize(CommitId model);
 
         public abstract BufferSession Serialize(Commit model);
+
+        public abstract BufferSession Serialize(TreeList model);
+
+        public abstract BufferSession Serialize(TreeSet model);
 
         #endregion
     }

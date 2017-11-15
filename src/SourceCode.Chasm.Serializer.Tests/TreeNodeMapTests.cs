@@ -13,9 +13,9 @@ namespace SourceCode.Chasm.IO.Tests
     {
         #region Constants
 
-        private static readonly TreeNode Node1 = new TreeNode(nameof(Node1), new BlobId(Sha1.Hash(nameof(Node1))));
-        private static readonly TreeNode Node2 = new TreeNode(nameof(Node2), new BlobId(Sha1.Hash(nameof(Node2))));
-        private static readonly TreeNode Node3 = new TreeNode(nameof(Node3), new BlobId(Sha1.Hash(nameof(Node3))));
+        private static readonly TreeMapNode Node1 = new TreeMapNode(nameof(Node1), new BlobId(Sha1.Hash(nameof(Node1))));
+        private static readonly TreeMapNode Node2 = new TreeMapNode(nameof(Node2), new BlobId(Sha1.Hash(nameof(Node2))));
+        private static readonly TreeMapNode Node3 = new TreeMapNode(nameof(Node3), new BlobId(Sha1.Hash(nameof(Node3))));
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_Default(IChasmSerializer ser)
         {
-            TreeNodeMap expected = default;
+            TreeMap expected = default;
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -39,7 +39,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_Empty(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap();
+            var expected = new TreeMap();
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -52,7 +52,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_Null(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap(null);
+            var expected = new TreeMap(null);
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -65,7 +65,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_Empty_Array(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap();
+            var expected = new TreeMap();
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -78,7 +78,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_1_Node(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap(Node1);
+            var expected = new TreeMap(Node1);
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -91,7 +91,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_2_Nodes(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap(Node1, Node2);
+            var expected = new TreeMap(Node1, Node2);
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);
@@ -104,7 +104,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_Roundtrip_TreeNodeMap_3_Nodes(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap(Node1, Node2, Node3);
+            var expected = new TreeMap(Node1, Node2, Node3);
             using (var buf = ser.Serialize(expected))
             {
                 var actual = ser.DeserializeTree(buf.Result);

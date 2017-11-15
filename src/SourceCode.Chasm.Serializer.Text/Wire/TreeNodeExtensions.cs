@@ -14,14 +14,14 @@ namespace SourceCode.Chasm.IO.Text.Wire
     {
         #region Methods
 
-        public static string Convert(this TreeNode model)
+        public static string Convert(this TreeMapNode model)
         {
-            if (model == TreeNode.Empty) return default;
+            if (model == TreeMapNode.Empty) return default;
 
             string kind, perm;
             switch (model.Kind)
             {
-                case NodeKind.Tree: kind = "tree"; perm = "040000"; break;
+                case NodeKind.Map: kind = "tree"; perm = "040000"; break;
                 case NodeKind.Blob: kind = "blob"; perm = "100664"; break;
                 default: throw new SerializationException();
             }
@@ -30,7 +30,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
             return wire;
         }
 
-        public static TreeNode ConvertTreeNode(this string wire)
+        public static TreeMapNode ConvertTreeNode(this string wire)
         {
             if (string.IsNullOrWhiteSpace(wire)) return default;
 
@@ -41,7 +41,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
             var sha1 = Sha1.Parse(tokens[2]);
             var name = tokens[3];
 
-            var model = new TreeNode(name, kind, sha1);
+            var model = new TreeMapNode(name, kind, sha1);
             return model;
         }
 

@@ -6,6 +6,7 @@
 #endregion
 
 using SourceCode.Clay;
+using System;
 using System.Collections.Generic;
 
 namespace SourceCode.Chasm
@@ -39,6 +40,18 @@ namespace SourceCode.Chasm
         #endregion
 
         #region IEqualityComparer
+
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
+        [Obsolete("Use GetHashCode(Sha1) to get the hash code for a Sha1.", true)]
+        public override int GetHashCode() =>
+            throw new InvalidOperationException();
+
+        [Obsolete("Use Equals(Sha1, Sha1) to check two Sha1 values for equality.")]
+        public override bool Equals(object obj) =>
+            throw new InvalidOperationException();
+
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
         /// <inheritdoc/>
         public abstract bool Equals(Sha1 x, Sha1 y);

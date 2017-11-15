@@ -79,7 +79,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
             if (string.IsNullOrEmpty(wire)) return default;
 
             // TreeId
-            TreeId? treeId = default;
+            TreeMapId? treeId = default;
             var index = wire.IndexOf(_treeId, StringComparison.Ordinal);
             {
                 if (index == 0)
@@ -89,7 +89,7 @@ namespace SourceCode.Chasm.IO.Text.Wire
                     index += Sha1.CharLen;
 
                     var sha1 = Sha1.Parse(curr);
-                    treeId = new TreeId(sha1);
+                    treeId = new TreeMapId(sha1);
                 }
                 else
                 {

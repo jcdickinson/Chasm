@@ -17,9 +17,9 @@ namespace SourceCode.Chasm.IO.Hybrid
     {
         #region Read
 
-        public override async ValueTask<IReadOnlyDictionary<TreeId, TreeNodeMap>> ReadTreeBatchAsync(IEnumerable<TreeId> treeIds, CancellationToken cancellationToken)
+        public override async ValueTask<IReadOnlyDictionary<TreeMapId, TreeMap>> ReadTreeBatchAsync(IEnumerable<TreeMapId> treeIds, CancellationToken cancellationToken)
         {
-            if (treeIds == null) return ReadOnlyDictionary.Empty<TreeId, TreeNodeMap>();
+            if (treeIds == null) return ReadOnlyDictionary.Empty<TreeMapId, TreeMap>();
 
             // TODO: Enable piecemeal reads (404s incur next repo)
 

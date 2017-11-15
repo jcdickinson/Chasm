@@ -16,7 +16,7 @@ namespace SourceCode.Chasm.IO.Json
     {
         #region Serialize
 
-        public BufferSession Serialize(TreeNodeMap model)
+        public BufferSession Serialize(TreeMap model)
         {
             var json = model.Write();
 
@@ -34,7 +34,7 @@ namespace SourceCode.Chasm.IO.Json
 
         #region Deserialize
 
-        public TreeNodeMap DeserializeTree(ReadOnlySpan<byte> span)
+        public TreeMap DeserializeTree(ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty) throw new ArgumentNullException(nameof(span));
 

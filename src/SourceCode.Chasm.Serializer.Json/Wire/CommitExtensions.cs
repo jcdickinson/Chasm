@@ -36,7 +36,7 @@ namespace SourceCode.Chasm.IO.Json.Wire
 
             Audit author = default;
             Audit committer = default;
-            TreeId? treeId = default;
+            TreeMapId? treeId = default;
             IReadOnlyList<CommitId> parents = null;
             string message = null;
 
@@ -80,10 +80,10 @@ namespace SourceCode.Chasm.IO.Json.Wire
                 return sha1 == null ? default : new CommitId(sha1.Value);
             });
 
-            TreeId? ReadTreeId()
+            TreeMapId? ReadTreeId()
             {
                 var sha1 = jr.ReadSha1();
-                return sha1 == null ? null : (TreeId?)(new TreeId(sha1.Value));
+                return sha1 == null ? null : (TreeMapId?)(new TreeMapId(sha1.Value));
             }
         }
 

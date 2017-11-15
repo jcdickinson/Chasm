@@ -14,9 +14,17 @@ namespace SourceCode.Chasm.IO
     {
         #region Methods
 
-        BufferSession Serialize(TreeNodeMap model);
+        BufferSession Serialize(TreeMap model);
 
-        TreeNodeMap DeserializeTree(ReadOnlySpan<byte> span);
+        BufferSession Serialize(TreeList model);
+
+        BufferSession Serialize(TreeSet model);
+
+        TreeMap DeserializeTreeMap(ReadOnlySpan<byte> span);
+
+        TreeList DeserializeTreeList(ReadOnlySpan<byte> span);
+
+        TreeSet DeserializeTreeSet(ReadOnlySpan<byte> span);
 
         #endregion
     }

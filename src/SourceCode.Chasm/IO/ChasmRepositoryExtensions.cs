@@ -39,7 +39,7 @@ namespace SourceCode.Chasm.IO
                 : default;
         }
 
-        public static ValueTask<TreeNodeMap?> ReadTreeAsync(this IChasmRepository chasmRepository, TreeId? treeId, CancellationToken cancellationToken)
+        public static ValueTask<TreeMap?> ReadTreeAsync(this IChasmRepository chasmRepository, TreeMapId? treeId, CancellationToken cancellationToken)
         {
             if (chasmRepository == null) throw new ArgumentNullException(nameof(chasmRepository));
             return treeId.HasValue

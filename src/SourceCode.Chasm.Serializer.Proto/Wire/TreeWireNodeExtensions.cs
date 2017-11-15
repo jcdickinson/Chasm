@@ -11,20 +11,20 @@ namespace SourceCode.Chasm.IO.Proto.Wire
     {
         #region Methods
 
-        public static TreeNode Convert(this TreeWireNode wire)
+        public static TreeMapNode Convert(this TreeWireNode wire)
         {
             if (wire == null) return default;
 
             var sha1 = wire.NodeId.Convert();
 
-            var model = new TreeNode(wire.Name, wire.Kind.Convert(), sha1.Value);
+            var model = new TreeMapNode(wire.Name, wire.Kind.Convert(), sha1.Value);
 
             return model;
         }
 
-        public static TreeWireNode Convert(this TreeNode model)
+        public static TreeWireNode Convert(this TreeMapNode model)
         {
-            if (model == TreeNode.Empty) return default;
+            if (model == TreeMapNode.Empty) return default;
 
             var wire = new TreeWireNode
             {

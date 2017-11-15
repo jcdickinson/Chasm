@@ -7,11 +7,11 @@
 
 namespace SourceCode.Chasm.Tests.TestObjects
 {
-    public static class TreeNodeMapTestObject
+    public static class TreeMapIdTestObject
     {
         #region Fields
 
-        public static readonly TreeNodeMap Random = new TreeNodeMap(TreeNodeTestObject.Random);
+        public static readonly TreeMapId Random = new TreeMapId(Sha1TestObject.Random);
 
         #endregion
     }

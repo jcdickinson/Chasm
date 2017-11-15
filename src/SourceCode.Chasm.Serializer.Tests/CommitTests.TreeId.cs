@@ -13,7 +13,7 @@ namespace SourceCode.Chasm.IO.Tests
     {
         #region Fields
 
-        private static readonly TreeId TreeId1 = new TreeId(Sha1.Hash(nameof(TreeId1)));
+        private static readonly TreeMapId TreeId1 = new TreeMapId(Sha1.Hash(nameof(TreeId1)));
 
         #endregion
 

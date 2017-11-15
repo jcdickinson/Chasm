@@ -35,6 +35,18 @@ namespace SourceCode.Chasm
 
         #region IEqualityComparer
 
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+
+        [Obsolete("Use GetHashCode(Commit) to get the hash code for a Commit.", true)]
+        public override int GetHashCode() =>
+            throw new InvalidOperationException();
+
+        [Obsolete("Use Equals(Commit, Commit) to check two Commit values for equality.")]
+        public override bool Equals(object obj) =>
+            throw new InvalidOperationException();
+
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
+
         /// <inheritdoc/>
         public abstract bool Equals(Commit x, Commit y);
 
@@ -62,7 +74,7 @@ namespace SourceCode.Chasm
 
             public override int GetHashCode(Commit obj)
             {
-                var hc = HashCode.Combine(obj.TreeId ?? default, TreeIdComparer.Default);
+                var hc = HashCode.Combine(obj.TreeId ?? default, TreeMapIdComparer.Default);
                 hc = HashCode.Combine(hc, obj.Author, obj.Committer, obj.Parents == null ? 0 : obj.Parents.Count);
                 hc = HashCode.Combine(hc, obj.Message ?? string.Empty, StringComparer.Ordinal);
 

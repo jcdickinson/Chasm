@@ -18,9 +18,9 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeId_equality))]
         public static void TreeId_equality()
         {
-            var treeId1 = new TreeId(Sha1.Hash("abc"));
-            var treeId2 = new TreeId(Sha1.Hash("abc"));
-            var treeId3 = new TreeId(Sha1.Hash("def"));
+            var treeId1 = new TreeMapId(Sha1.Hash("abc"));
+            var treeId2 = new TreeMapId(Sha1.Hash("abc"));
+            var treeId3 = new TreeMapId(Sha1.Hash("def"));
 
             Assert.True(treeId1 == treeId2);
             Assert.False(treeId1 != treeId2);
@@ -43,11 +43,11 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeId_Compare))]
         public static void TreeId_Compare()
         {
-            var comparer = TreeIdComparer.Default;
+            var comparer = TreeMapIdComparer.Default;
 
-            var treeId1 = new TreeId(Sha1.Hash("abc"));
-            var treeId2 = new TreeId(Sha1.Hash("abc"));
-            var treeId3 = new TreeId(Sha1.Hash("def"));
+            var treeId1 = new TreeMapId(Sha1.Hash("abc"));
+            var treeId2 = new TreeMapId(Sha1.Hash("abc"));
+            var treeId3 = new TreeMapId(Sha1.Hash("def"));
             var list = new[] { treeId1, treeId2, treeId3 };
 
             Assert.True(treeId1.CompareTo(treeId2) == 0);

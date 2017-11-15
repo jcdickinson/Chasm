@@ -17,42 +17,42 @@ namespace SourceCode.Chasm.IO
     {
         #region Read
 
-        public virtual async ValueTask<TreeNodeMap?> ReadTreeAsync(TreeId treeId, CancellationToken cancellationToken)
+        public virtual async ValueTask<TreeMap?> ReadTreeAsync(TreeMapId treeMapId, CancellationToken cancellationToken)
         {
             // Read bytes
-            var buffer = await ReadObjectAsync(treeId.Sha1, cancellationToken).ConfigureAwait(false);
+            var buffer = await ReadObjectAsync(treeMapId.Sha1, cancellationToken).ConfigureAwait(false);
             if (buffer == null) return default;
 
             // Deserialize
-            var tree = Serializer.DeserializeTree(buffer.Value.Span);
+            var tree = Serializer.DeserializeTreeMap(buffer.Value.Span);
             return tree;
         }
 
-        public virtual async ValueTask<IReadOnlyDictionary<TreeId, TreeNodeMap>> ReadTreeBatchAsync(IEnumerable<TreeId> treeIds, CancellationToken cancellationToken)
+        public virtual async ValueTask<IReadOnlyDictionary<TreeMapId, TreeMap>> ReadTreeBatchAsync(IEnumerable<TreeMapId> treeIds, CancellationToken cancellationToken)
         {
-            if (treeIds == null) return ReadOnlyDictionary.Empty<TreeId, TreeNodeMap>();
+            if (treeIds == null) return ReadOnlyDictionary.Empty<TreeMapId, TreeMap>();
 
             // Read bytes in batch
             var sha1s = System.Linq.Enumerable.Select(treeIds, n => n.Sha1);
             var kvps = await ReadObjectBatchAsync(sha1s, cancellationToken).ConfigureAwait(false);
 
             // Deserialize batch
-            if (kvps.Count == 0) return ReadOnlyDictionary.Empty<TreeId, TreeNodeMap>();
+            if (kvps.Count == 0) return ReadOnlyDictionary.Empty<TreeMapId, TreeMap>();
 
-            var dict = new Dictionary<TreeId, TreeNodeMap>(kvps.Count);
+            var dict = new Dictionary<TreeMapId, TreeMap>(kvps.Count);
 
             foreach (var kvp in kvps)
             {
-                var tree = Serializer.DeserializeTree(kvp.Value.Span);
+                var tree = Serializer.DeserializeTreeMap(kvp.Value.Span);
 
-                var treeId = new TreeId(kvp.Key);
+                var treeId = new TreeMapId(kvp.Key);
                 dict[treeId] = tree;
             }
 
             return dict;
         }
 
-        public virtual async ValueTask<TreeNodeMap?> ReadTreeAsync(string branch, string commitRefName, CancellationToken cancellationToken)
+        public virtual async ValueTask<TreeMap?> ReadTreeAsync(string branch, string commitRefName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(branch)) throw new ArgumentNullException(nameof(branch));
             if (string.IsNullOrWhiteSpace(commitRefName)) throw new ArgumentNullException(nameof(commitRefName));
@@ -68,7 +68,7 @@ namespace SourceCode.Chasm.IO
             return tree;
         }
 
-        public virtual async ValueTask<TreeNodeMap?> ReadTreeAsync(CommitId commitId, CancellationToken cancellationToken)
+        public virtual async ValueTask<TreeMap?> ReadTreeAsync(CommitId commitId, CancellationToken cancellationToken)
         {
             // Commit
             var commit = await ReadCommitAsync(commitId, cancellationToken).ConfigureAwait(false);
@@ -85,7 +85,7 @@ namespace SourceCode.Chasm.IO
 
         #region Write
 
-        public virtual async ValueTask<TreeId> WriteTreeAsync(TreeNodeMap tree, CancellationToken cancellationToken)
+        public virtual async ValueTask<TreeMapId> WriteTreeAsync(TreeMap tree, CancellationToken cancellationToken)
         {
             using (var session = Serializer.Serialize(tree))
             {
@@ -93,12 +93,12 @@ namespace SourceCode.Chasm.IO
 
                 await WriteObjectAsync(sha1, session.Result, false, cancellationToken).ConfigureAwait(false);
 
-                var model = new TreeId(sha1);
+                var model = new TreeMapId(sha1);
                 return model;
             }
         }
 
-        public virtual async ValueTask<CommitId> WriteTreeAsync(IReadOnlyList<CommitId> parents, TreeNodeMap tree, Audit author, Audit committer, string message, CancellationToken cancellationToken)
+        public virtual async ValueTask<CommitId> WriteTreeAsync(IReadOnlyList<CommitId> parents, TreeMap tree, Audit author, Audit committer, string message, CancellationToken cancellationToken)
         {
             var treeId = await WriteTreeAsync(tree, cancellationToken).ConfigureAwait(false);
             var commit = new Commit(parents, treeId, author, committer, message);

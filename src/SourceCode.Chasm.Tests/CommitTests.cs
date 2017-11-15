@@ -59,7 +59,7 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(Commit_Equality))]
         public static void Commit_Equality()
         {
-            var expected = new Commit(new[] { new CommitId(Sha1.Hash("c1")), new CommitId(Sha1.Hash("c2")) }, new TreeId(Sha1.Hash("abc")), new Audit("bob", DateTimeOffset.Now), new Audit("mary", DateTimeOffset.Now), "hello");
+            var expected = new Commit(new[] { new CommitId(Sha1.Hash("c1")), new CommitId(Sha1.Hash("c2")) }, new TreeMapId(Sha1.Hash("abc")), new Audit("bob", DateTimeOffset.Now), new Audit("mary", DateTimeOffset.Now), "hello");
 
             // Equal
             var actual = new Commit(expected.Parents, expected.TreeId, expected.Author, expected.Committer, expected.Message);
@@ -93,7 +93,7 @@ namespace SourceCode.Chasm.Tests
             Assert.NotEqual(expected, actual);
             Assert.NotEqual(expected.GetHashCode(), actual.GetHashCode());
 
-            actual = new Commit(expected.Parents, new TreeId(Sha1.Hash("def")), expected.Author, expected.Committer, expected.Message);
+            actual = new Commit(expected.Parents, new TreeMapId(Sha1.Hash("def")), expected.Author, expected.Committer, expected.Message);
             Assert.NotEqual(expected, actual);
             Assert.NotEqual(expected.GetHashCode(), actual.GetHashCode());
 
@@ -256,7 +256,7 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(Commit_Deconstruct))]
         public static void Commit_Deconstruct()
         {
-            var expected = new Commit(new[] { new CommitId(Sha1.Hash("c1")), new CommitId(Sha1.Hash("c2")) }, new TreeId(Sha1.Hash("abc")), Audit.Empty, Audit.Empty, "hello");
+            var expected = new Commit(new[] { new CommitId(Sha1.Hash("c1")), new CommitId(Sha1.Hash("c2")) }, new TreeMapId(Sha1.Hash("abc")), Audit.Empty, Audit.Empty, "hello");
 
             var (parents, treeId, author, committer, message) = expected;
             var actual = new Commit(parents, treeId, author, committer, message);

@@ -27,7 +27,7 @@ namespace SourceCode.Chasm.IO.Json.Wire
 
         #region Read
 
-        public static TreeNode ReadTreeNode(this JsonReader jr)
+        public static TreeMapNode ReadTreeNode(this JsonReader jr)
         {
             if (jr == null) throw new ArgumentNullException(nameof(jr));
 
@@ -57,10 +57,10 @@ namespace SourceCode.Chasm.IO.Json.Wire
             },
 
             // Factory
-            () => name == null && kind == default && sha1 == default ? default : new TreeNode(name, kind, sha1));
+            () => name == null && kind == default && sha1 == default ? default : new TreeMapNode(name, kind, sha1));
         }
 
-        public static TreeNode ReadTreeNode(this string json)
+        public static TreeMapNode ReadTreeNode(this string json)
         {
             if (json == null || json == JsonConstants.Null) return default;
 
@@ -78,7 +78,7 @@ namespace SourceCode.Chasm.IO.Json.Wire
 
         #region Write
 
-        public static void Write(this JsonWriter jw, TreeNode model)
+        public static void Write(this JsonWriter jw, TreeMapNode model)
         {
             if (jw == null) throw new ArgumentNullException(nameof(jw));
 
@@ -105,7 +105,7 @@ namespace SourceCode.Chasm.IO.Json.Wire
             jw.WriteEndObject();
         }
 
-        public static string Write(this TreeNode model)
+        public static string Write(this TreeMapNode model)
         {
             if (model == default) return JsonConstants.Null;
 

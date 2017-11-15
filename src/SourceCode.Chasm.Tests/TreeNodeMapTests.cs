@@ -16,51 +16,51 @@ namespace SourceCode.Chasm.Tests
     {
         #region Constants
 
-        private static readonly TreeNode Node0 = new TreeNode(nameof(Node0), NodeKind.Tree, Sha1.Hash(nameof(Node0)));
-        private static readonly TreeNode Node0Blob = new TreeNode(nameof(Node0), NodeKind.Blob, Sha1.Hash(nameof(Node0Blob)));
-        private static readonly TreeNode Node1 = new TreeNode(nameof(Node1), NodeKind.Blob, Sha1.Hash(nameof(Node1)));
-        private static readonly TreeNode Node2 = new TreeNode(nameof(Node2), NodeKind.Tree, Sha1.Hash(nameof(Node2)));
-        private static readonly TreeNode Node3 = new TreeNode(nameof(Node3), NodeKind.Blob, Sha1.Hash(nameof(Node3)));
+        private static readonly TreeMapNode Node0 = new TreeMapNode(nameof(Node0), NodeKind.Map, Sha1.Hash(nameof(Node0)));
+        private static readonly TreeMapNode Node0Blob = new TreeMapNode(nameof(Node0), NodeKind.Blob, Sha1.Hash(nameof(Node0Blob)));
+        private static readonly TreeMapNode Node1 = new TreeMapNode(nameof(Node1), NodeKind.Blob, Sha1.Hash(nameof(Node1)));
+        private static readonly TreeMapNode Node2 = new TreeMapNode(nameof(Node2), NodeKind.Map, Sha1.Hash(nameof(Node2)));
+        private static readonly TreeMapNode Node3 = new TreeMapNode(nameof(Node3), NodeKind.Blob, Sha1.Hash(nameof(Node3)));
 
         #endregion
 
         #region Methods
 
-        private static void AssertEmpty(TreeNodeMap treeNodeMap)
+        private static void AssertEmpty(TreeMap treeMap)
         {
-            Assert.Empty(treeNodeMap);
-            Assert.Equal(TreeNodeMap.Empty, treeNodeMap); // By design
-            Assert.Equal(TreeNodeMap.Empty.GetHashCode(), treeNodeMap.GetHashCode());
-            Assert.Empty(treeNodeMap.Keys);
+            Assert.Empty(treeMap);
+            Assert.Equal(TreeMap.Empty, treeMap); // By design
+            Assert.Equal(TreeMap.Empty.GetHashCode(), treeMap.GetHashCode());
+            Assert.Empty(treeMap.Keys);
 
-            Assert.Throws<IndexOutOfRangeException>(() => treeNodeMap[0]);
-            Assert.Throws<KeyNotFoundException>(() => treeNodeMap["x"]);
-            Assert.False(treeNodeMap.TryGetValue("x", out _));
-            Assert.False(treeNodeMap.TryGetValue("x", NodeKind.Blob, out _));
+            Assert.Throws<IndexOutOfRangeException>(() => treeMap[0]);
+            Assert.Throws<KeyNotFoundException>(() => treeMap["x"]);
+            Assert.False(treeMap.TryGetValue("x", out _));
+            Assert.False(treeMap.TryGetValue("x", NodeKind.Blob, out _));
 
-            Assert.False(treeNodeMap.Equals(new object()));
-            Assert.Contains("Count: 0", treeNodeMap.ToString());
-            Assert.Equal(-1, treeNodeMap.IndexOf(Guid.NewGuid().ToString()));
+            Assert.False(treeMap.Equals(new object()));
+            Assert.Contains("Count: 0", treeMap.ToString());
+            Assert.Equal(-1, treeMap.IndexOf(Guid.NewGuid().ToString()));
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Empty))]
         public static void TreeNodeMap_Empty()
         {
-            var noData = new TreeNodeMap();
+            var noData = new TreeMap();
             AssertEmpty(noData);
 
-            var nullData = new TreeNodeMap(null);
+            var nullData = new TreeMap(null);
             AssertEmpty(nullData);
 
-            var collData = new TreeNodeMap((IList<TreeNode>)null);
+            var collData = new TreeMap((IList<TreeMapNode>)null);
             AssertEmpty(collData);
 
-            var emptyData = new TreeNodeMap(Array.Empty<TreeNode>());
+            var emptyData = new TreeMap(Array.Empty<TreeMapNode>());
             AssertEmpty(emptyData);
 
-            Assert.Empty(TreeNodeMap.Empty);
-            Assert.Equal(default, TreeNodeMap.Empty);
+            Assert.Empty(TreeMap.Empty);
+            Assert.Equal(default, TreeMap.Empty);
         }
 
         [Trait("Type", "Unit")]
@@ -68,8 +68,8 @@ namespace SourceCode.Chasm.Tests
         public static void TreeNodeMap_Sorting()
         {
             var nodes = new[] { Node0, Node1 };
-            var tree0 = new TreeNodeMap(nodes.OrderBy(n => n.Sha1).ToArray());
-            var tree1 = new TreeNodeMap(nodes.OrderByDescending(n => n.Sha1).ToList()); // ICollection<T>
+            var tree0 = new TreeMap(nodes.OrderBy(n => n.TreeRef.Sha1).ToArray());
+            var tree1 = new TreeMap(nodes.OrderByDescending(n => n.TreeRef.Sha1).ToList()); // ICollection<T>
 
             Assert.Equal(tree0[0], tree1[0]);
             Assert.Equal(tree0[1], tree1[1]);
@@ -83,11 +83,11 @@ namespace SourceCode.Chasm.Tests
             Assert.True(tree1.TryGetValue(Node0.Name, out var v20) && v20 == Node0);
             Assert.True(tree1.TryGetValue(Node1.Name, out var v21) && v21 == Node1);
             Assert.False(tree1.TryGetValue(Node0.Name, NodeKind.Blob, out _));
-            Assert.True(tree1.TryGetValue(Node0.Name, Node0.Kind, out _));
+            Assert.True(tree1.TryGetValue(Node0.Name, Node0.TreeRef.Kind, out _));
 
             nodes = new[] { Node0, Node1, Node2 };
-            tree0 = new TreeNodeMap(nodes.OrderBy(n => n.Sha1).ToArray());
-            tree1 = new TreeNodeMap(nodes.OrderByDescending(n => n.Sha1).ToList()); // ICollection<T>
+            tree0 = new TreeMap(nodes.OrderBy(n => n.TreeRef.Sha1).ToArray());
+            tree1 = new TreeMap(nodes.OrderByDescending(n => n.TreeRef.Sha1).ToList()); // ICollection<T>
 
             Assert.True(tree1[Node0.Name] == Node0);
             Assert.True(tree1[Node1.Name] == Node1);
@@ -106,8 +106,8 @@ namespace SourceCode.Chasm.Tests
             Assert.Equal(tree0[2], tree1[2]);
 
             nodes = new[] { Node0, Node1, Node2, Node3 };
-            tree0 = new TreeNodeMap(nodes.OrderBy(n => n.Sha1).ToArray());
-            tree1 = new TreeNodeMap(nodes.OrderByDescending(n => n.Sha1).ToList()); // ICollection<T>
+            tree0 = new TreeMap(nodes.OrderBy(n => n.TreeRef.Sha1).ToArray());
+            tree1 = new TreeMap(nodes.OrderByDescending(n => n.TreeRef.Sha1).ToList()); // ICollection<T>
 
             Assert.True(tree1[Node0.Name] == Node0);
             Assert.True(tree1[Node1.Name] == Node1);
@@ -136,11 +136,11 @@ namespace SourceCode.Chasm.Tests
         {
             var nodes = new[] { Node0, Node0 };
 
-            var tree = new TreeNodeMap(nodes);
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0));
+            var tree = new TreeMap(nodes);
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0));
 
-            tree = new TreeNodeMap(nodes.ToList()); // ICollection<T>
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0));
+            tree = new TreeMap(nodes.ToList()); // ICollection<T>
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0));
         }
 
         [Trait("Type", "Unit")]
@@ -149,11 +149,11 @@ namespace SourceCode.Chasm.Tests
         {
             var nodes = new[] { Node0, Node1, Node0 }; // Shuffled
 
-            var tree = new TreeNodeMap(nodes);
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1));
+            var tree = new TreeMap(nodes);
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1));
 
-            tree = new TreeNodeMap(nodes.ToList()); // ICollection<T>
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1));
+            tree = new TreeMap(nodes.ToList()); // ICollection<T>
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1));
         }
 
         [Trait("Type", "Unit")]
@@ -164,11 +164,11 @@ namespace SourceCode.Chasm.Tests
             var nodes = new[] { Node0, Node0Blob }; // Shuffled
 
             // Action
-            var ex = Assert.Throws<ArgumentException>(() => new TreeNodeMap(nodes));
+            var ex = Assert.Throws<ArgumentException>(() => new TreeMap(nodes));
 
             // Assert
             Assert.Contains(Node0.Name, ex.Message);
-            Assert.Contains(Node0.Sha1.ToString(), ex.Message);
+            Assert.Contains(Node0.TreeRef.Sha1.ToString(), ex.Message);
         }
 
         [Trait("Type", "Unit")]
@@ -179,11 +179,11 @@ namespace SourceCode.Chasm.Tests
             var nodes = new[] { Node0, Node0Blob, Node1 }; // Shuffled
 
             // Action
-            var ex = Assert.Throws<ArgumentException>(() => new TreeNodeMap(nodes));
+            var ex = Assert.Throws<ArgumentException>(() => new TreeMap(nodes));
 
             // Assert
             Assert.Contains(Node0.Name, ex.Message);
-            Assert.Contains(Node0.Sha1.ToString(), ex.Message);
+            Assert.Contains(Node0.TreeRef.Sha1.ToString(), ex.Message);
         }
 
         [Trait("Type", "Unit")]
@@ -192,11 +192,11 @@ namespace SourceCode.Chasm.Tests
         {
             var nodes = new[] { Node0, Node2, Node1, Node0 }; // Shuffled
 
-            var tree = new TreeNodeMap(nodes);
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2));
+            var tree = new TreeMap(nodes);
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2));
 
-            tree = new TreeNodeMap(nodes.ToList()); // ICollection<T>
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2));
+            tree = new TreeMap(nodes.ToList()); // ICollection<T>
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2));
         }
 
         [Trait("Type", "Unit")]
@@ -205,45 +205,45 @@ namespace SourceCode.Chasm.Tests
         {
             var nodes = new[] { Node3, Node1, Node2, Node0, Node3, Node0, Node1, Node0, Node1, Node2, Node0, Node3 }; // Shuffled
 
-            var tree = new TreeNodeMap(nodes);
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2), n => Assert.Equal(n, Node3));
+            var tree = new TreeMap(nodes);
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2), n => Assert.Equal(n, Node3));
 
-            tree = new TreeNodeMap(nodes.ToList()); // ICollection<T>
-            Assert.Collection<TreeNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2), n => Assert.Equal(n, Node3));
+            tree = new TreeMap(nodes.ToList()); // ICollection<T>
+            Assert.Collection<TreeMapNode>(tree, n => Assert.Equal(n, Node0), n => Assert.Equal(n, Node1), n => Assert.Equal(n, Node2), n => Assert.Equal(n, Node3));
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Duplicate_Name))]
         public static void TreeNodeMap_Duplicate_Name()
         {
-            var nodes = new[] { new TreeNode(Node0.Name, NodeKind.Tree, Node1.Sha1), Node0 }; // Reversed
+            var nodes = new[] { new TreeMapNode(Node0.Name, NodeKind.Map, Node1.TreeRef.Sha1), Node0 }; // Reversed
 
-            Assert.Throws<ArgumentException>(() => new TreeNodeMap(nodes));
-            Assert.Throws<ArgumentException>(() => new TreeNodeMap(nodes.ToList())); // ICollection<T>
+            Assert.Throws<ArgumentException>(() => new TreeMap(nodes));
+            Assert.Throws<ArgumentException>(() => new TreeMap(nodes.ToList())); // ICollection<T>
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Duplicate_Sha1))]
         public static void TreeNodeMap_Duplicate_Sha1()
         {
-            var nodes = new[] { new TreeNode(Node1.Name, NodeKind.Tree, Node0.Sha1), Node0 }; // Reversed
+            var nodes = new[] { new TreeMapNode(Node1.Name, NodeKind.Map, Node0.TreeRef.Sha1), Node0 }; // Reversed
 
-            var tree0 = new TreeNodeMap(nodes);
-            Assert.Collection<TreeNode>(tree0, n => Assert.Equal(n, Node0), n => Assert.Equal(n, nodes[0]));
+            var tree0 = new TreeMap(nodes);
+            Assert.Collection<TreeMapNode>(tree0, n => Assert.Equal(n, Node0), n => Assert.Equal(n, nodes[0]));
 
-            tree0 = new TreeNodeMap(nodes.ToList()); // ICollection<T>
-            Assert.Collection<TreeNode>(tree0, n => Assert.Equal(n, Node0), n => Assert.Equal(n, nodes[0]));
+            tree0 = new TreeMap(nodes.ToList()); // ICollection<T>
+            Assert.Collection<TreeMapNode>(tree0, n => Assert.Equal(n, Node0), n => Assert.Equal(n, nodes[0]));
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Equality))]
         public static void TreeNodeMap_Equality()
         {
-            var expected = new TreeNodeMap(new[] { new TreeNode("c1", NodeKind.Blob, Sha1.Hash("c1")), new TreeNode("c2", NodeKind.Tree, Sha1.Hash("c2")) });
-            var node3 = new TreeNode("c3", NodeKind.Tree, Sha1.Hash("c3"));
+            var expected = new TreeMap(new[] { new TreeMapNode("c1", NodeKind.Blob, Sha1.Hash("c1")), new TreeMapNode("c2", NodeKind.Map, Sha1.Hash("c2")) });
+            var node3 = new TreeMapNode("c3", NodeKind.Map, Sha1.Hash("c3"));
 
             // Equal
-            var actual = new TreeNodeMap().Merge(expected);
+            var actual = new TreeMap().Merge(expected);
             Assert.Equal(expected, actual);
             Assert.Equal(expected.GetHashCode(), actual.GetHashCode());
             Assert.True(actual.Equals((object)expected));
@@ -251,7 +251,7 @@ namespace SourceCode.Chasm.Tests
             Assert.False(expected != actual);
 
             // Less Nodes
-            actual = new TreeNodeMap().Merge(expected[0]);
+            actual = new TreeMap().Merge(expected[0]);
             Assert.NotEqual(expected, actual);
             Assert.NotEqual(expected.GetHashCode(), actual.GetHashCode());
             Assert.False(actual.Equals((object)expected));
@@ -259,7 +259,7 @@ namespace SourceCode.Chasm.Tests
             Assert.True(expected != actual);
 
             // More Nodes
-            actual = new TreeNodeMap().Merge(expected).Merge(node3);
+            actual = new TreeMap().Merge(expected).Merge(node3);
             Assert.NotEqual(expected, actual);
             Assert.NotEqual(expected.GetHashCode(), actual.GetHashCode());
             Assert.False(actual.Equals((object)expected));
@@ -267,7 +267,7 @@ namespace SourceCode.Chasm.Tests
             Assert.True(expected != actual);
 
             // Different Nodes
-            actual = new TreeNodeMap().Merge(expected[0]).Merge(node3);
+            actual = new TreeMap().Merge(expected[0]).Merge(node3);
             Assert.NotEqual(expected, actual); // hashcode is the same (node count)
             Assert.False(actual.Equals((object)expected));
             Assert.False(expected == actual);
@@ -279,7 +279,7 @@ namespace SourceCode.Chasm.Tests
         public static void TreeNodeMap_IndexOf()
         {
             // Arrange
-            var actual = new TreeNodeMap(new[] { Node0, Node1 });
+            var actual = new TreeMap(new[] { Node0, Node1 });
 
             // Action/Assert
             Assert.Equal(-1, actual.IndexOf(null));
@@ -292,9 +292,9 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeNodeMap_Merge_Empty))]
         public static void TreeNodeMap_Merge_Empty()
         {
-            var emptyTreeNodeMap = new TreeNodeMap();
-            var node = new TreeNode("b", NodeKind.Blob, Sha1.Hash("Test1"));
-            var list = new TreeNodeMap(node);
+            var emptyTreeNodeMap = new TreeMap();
+            var node = new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("Test1"));
+            var list = new TreeMap(node);
 
             // TreeNodeMap
             var merged = list.Merge(emptyTreeNodeMap);
@@ -304,7 +304,7 @@ namespace SourceCode.Chasm.Tests
             Assert.Equal(list, merged);
 
             // ICollection
-            merged = list.Merge(Array.Empty<TreeNode>());
+            merged = list.Merge(Array.Empty<TreeMapNode>());
             Assert.Equal(list, merged);
 
             merged = emptyTreeNodeMap.Merge(list.Values.ToArray());
@@ -316,7 +316,7 @@ namespace SourceCode.Chasm.Tests
         public static void TreeNodeMap_Merge_Null()
         {
             // Arrange
-            var list = new TreeNodeMap(Node0);
+            var list = new TreeMap(Node0);
 
             // Action
             var merged = list.Merge(null);
@@ -329,15 +329,15 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeNodeMap_Merge_Single))]
         public static void TreeNodeMap_Merge_Single()
         {
-            var list = new TreeNodeMap();
+            var list = new TreeMap();
 
-            list = list.Merge(new TreeNode("b", NodeKind.Blob, Sha1.Hash("Test1")));
-            list = list.Merge(new TreeNode("a", NodeKind.Tree, Sha1.Hash("Test2")));
-            list = list.Merge(new TreeNode("c", NodeKind.Blob, Sha1.Hash("Test3")));
-            list = list.Merge(new TreeNode("d", NodeKind.Tree, Sha1.Hash("Test4")));
-            list = list.Merge(new TreeNode("g", NodeKind.Blob, Sha1.Hash("Test5")));
-            list = list.Merge(new TreeNode("e", NodeKind.Tree, Sha1.Hash("Test6")));
-            list = list.Merge(new TreeNode("f", NodeKind.Blob, Sha1.Hash("Test7")));
+            list = list.Merge(new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("Test1")));
+            list = list.Merge(new TreeMapNode("a", NodeKind.Map, Sha1.Hash("Test2")));
+            list = list.Merge(new TreeMapNode("c", NodeKind.Blob, Sha1.Hash("Test3")));
+            list = list.Merge(new TreeMapNode("d", NodeKind.Map, Sha1.Hash("Test4")));
+            list = list.Merge(new TreeMapNode("g", NodeKind.Blob, Sha1.Hash("Test5")));
+            list = list.Merge(new TreeMapNode("e", NodeKind.Map, Sha1.Hash("Test6")));
+            list = list.Merge(new TreeMapNode("f", NodeKind.Blob, Sha1.Hash("Test7")));
 
             var prev = list.Keys.First();
             foreach (var cur in list.Keys.Skip(1))
@@ -352,43 +352,43 @@ namespace SourceCode.Chasm.Tests
         public static void TreeNodeMap_Merge_Single_Exist()
         {
             // Arrange
-            var list = new TreeNodeMap();
+            var list = new TreeMap();
             var expectedName = Guid.NewGuid().ToString();
-            var expectedKind = NodeKind.Tree;
+            var expectedKind = NodeKind.Map;
             var expectedSha1 = Sha1.Hash(Guid.NewGuid().ToString());
 
-            list = list.Merge(new TreeNode(expectedName, NodeKind.Blob, Sha1.Hash("Test1")));
+            list = list.Merge(new TreeMapNode(expectedName, NodeKind.Blob, Sha1.Hash("Test1")));
 
             // Action
-            var actual = list.Merge(new TreeNode(expectedName, expectedKind, expectedSha1));
+            var actual = list.Merge(new TreeMapNode(expectedName, expectedKind, expectedSha1));
             var actualNode = actual[expectedName];
 
             // Assert
             Assert.Equal(expectedName, actualNode.Name);
-            Assert.Equal(expectedKind, actualNode.Kind);
-            Assert.Equal(expectedSha1, actualNode.Sha1);
+            Assert.Equal(expectedKind, actualNode.TreeRef.Kind);
+            Assert.Equal(expectedSha1, actualNode.TreeRef.Sha1);
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Merge_TreeNodeMap))]
         public static void TreeNodeMap_Merge_TreeNodeMap()
         {
-            var list1 = new TreeNodeMap();
+            var list1 = new TreeMap();
 
-            list1 = list1.Merge(new TreeNode("d", NodeKind.Tree, Sha1.Hash("Test4")));
-            list1 = list1.Merge(new TreeNode("e", NodeKind.Tree, Sha1.Hash("Test5")));
-            list1 = list1.Merge(new TreeNode("f", NodeKind.Blob, Sha1.Hash("Test6")));
-            list1 = list1.Merge(new TreeNode("g", NodeKind.Blob, Sha1.Hash("Test7")));
+            list1 = list1.Merge(new TreeMapNode("d", NodeKind.Map, Sha1.Hash("Test4")));
+            list1 = list1.Merge(new TreeMapNode("e", NodeKind.Map, Sha1.Hash("Test5")));
+            list1 = list1.Merge(new TreeMapNode("f", NodeKind.Blob, Sha1.Hash("Test6")));
+            list1 = list1.Merge(new TreeMapNode("g", NodeKind.Blob, Sha1.Hash("Test7")));
 
-            var list2 = new TreeNodeMap();
+            var list2 = new TreeMap();
 
-            list2 = list2.Merge(new TreeNode("a", NodeKind.Tree, Sha1.Hash("Test1")));
-            list2 = list2.Merge(new TreeNode("b", NodeKind.Blob, Sha1.Hash("Test2")));
-            list2 = list2.Merge(new TreeNode("c", NodeKind.Blob, Sha1.Hash("Test3")));
-            list2 = list2.Merge(new TreeNode("d", NodeKind.Tree, Sha1.Hash("Test4 Replace")));
-            list2 = list2.Merge(new TreeNode("g", NodeKind.Blob, Sha1.Hash("Test5 Replace")));
-            list2 = list2.Merge(new TreeNode("q", NodeKind.Tree, Sha1.Hash("Test8")));
-            list2 = list2.Merge(new TreeNode("r", NodeKind.Blob, Sha1.Hash("Test9")));
+            list2 = list2.Merge(new TreeMapNode("a", NodeKind.Map, Sha1.Hash("Test1")));
+            list2 = list2.Merge(new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("Test2")));
+            list2 = list2.Merge(new TreeMapNode("c", NodeKind.Blob, Sha1.Hash("Test3")));
+            list2 = list2.Merge(new TreeMapNode("d", NodeKind.Map, Sha1.Hash("Test4 Replace")));
+            list2 = list2.Merge(new TreeMapNode("g", NodeKind.Blob, Sha1.Hash("Test5 Replace")));
+            list2 = list2.Merge(new TreeMapNode("q", NodeKind.Map, Sha1.Hash("Test8")));
+            list2 = list2.Merge(new TreeMapNode("r", NodeKind.Blob, Sha1.Hash("Test9")));
 
             var list3 = list1.Merge(list2);
 
@@ -404,37 +404,37 @@ namespace SourceCode.Chasm.Tests
             Assert.Equal("q", list3[7].Name);
             Assert.Equal("r", list3[8].Name);
 
-            Assert.Equal(list2[0].Sha1, list3[0].Sha1);
-            Assert.Equal(list2[1].Sha1, list3[1].Sha1);
-            Assert.Equal(list2[2].Sha1, list3[2].Sha1);
-            Assert.Equal(list2[3].Sha1, list3[3].Sha1);
-            Assert.Equal(list1[1].Sha1, list3[4].Sha1);
-            Assert.Equal(list1[2].Sha1, list3[5].Sha1);
-            Assert.Equal(list2[4].Sha1, list3[6].Sha1);
-            Assert.Equal(list2[5].Sha1, list3[7].Sha1);
-            Assert.Equal(list2[6].Sha1, list3[8].Sha1);
+            Assert.Equal(list2[0].TreeRef.Sha1, list3[0].TreeRef.Sha1);
+            Assert.Equal(list2[1].TreeRef.Sha1, list3[1].TreeRef.Sha1);
+            Assert.Equal(list2[2].TreeRef.Sha1, list3[2].TreeRef.Sha1);
+            Assert.Equal(list2[3].TreeRef.Sha1, list3[3].TreeRef.Sha1);
+            Assert.Equal(list1[1].TreeRef.Sha1, list3[4].TreeRef.Sha1);
+            Assert.Equal(list1[2].TreeRef.Sha1, list3[5].TreeRef.Sha1);
+            Assert.Equal(list2[4].TreeRef.Sha1, list3[6].TreeRef.Sha1);
+            Assert.Equal(list2[5].TreeRef.Sha1, list3[7].TreeRef.Sha1);
+            Assert.Equal(list2[6].TreeRef.Sha1, list3[8].TreeRef.Sha1);
         }
 
         [Trait("Type", "Unit")]
         [Fact(DisplayName = nameof(TreeNodeMap_Merge_Collection))]
         public static void TreeNodeMap_Merge_Collection()
         {
-            var list1 = new TreeNodeMap();
+            var list1 = new TreeMap();
 
-            list1 = list1.Merge(new TreeNode("d", NodeKind.Tree, Sha1.Hash("Test4")));
-            list1 = list1.Merge(new TreeNode("e", NodeKind.Tree, Sha1.Hash("Test5")));
-            list1 = list1.Merge(new TreeNode("f", NodeKind.Blob, Sha1.Hash("Test6")));
-            list1 = list1.Merge(new TreeNode("g", NodeKind.Blob, Sha1.Hash("Test7")));
+            list1 = list1.Merge(new TreeMapNode("d", NodeKind.Map, Sha1.Hash("Test4")));
+            list1 = list1.Merge(new TreeMapNode("e", NodeKind.Map, Sha1.Hash("Test5")));
+            list1 = list1.Merge(new TreeMapNode("f", NodeKind.Blob, Sha1.Hash("Test6")));
+            list1 = list1.Merge(new TreeMapNode("g", NodeKind.Blob, Sha1.Hash("Test7")));
 
             var list2 = new[]
             {
-                new TreeNode("c", NodeKind.Blob, Sha1.Hash("Test3")),
-                new TreeNode("a", NodeKind.Tree, Sha1.Hash("Test1")),
-                new TreeNode("b", NodeKind.Blob, Sha1.Hash("Test2")),
-                new TreeNode("d", NodeKind.Tree, Sha1.Hash("Test4 Replace")),
-                new TreeNode("g", NodeKind.Blob, Sha1.Hash("Test5 Replace")),
-                new TreeNode("q", NodeKind.Tree, Sha1.Hash("Test8")),
-                new TreeNode("r", NodeKind.Blob, Sha1.Hash("Test9")),
+                new TreeMapNode("c", NodeKind.Blob, Sha1.Hash("Test3")),
+                new TreeMapNode("a", NodeKind.Map, Sha1.Hash("Test1")),
+                new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("Test2")),
+                new TreeMapNode("d", NodeKind.Map, Sha1.Hash("Test4 Replace")),
+                new TreeMapNode("g", NodeKind.Blob, Sha1.Hash("Test5 Replace")),
+                new TreeMapNode("q", NodeKind.Map, Sha1.Hash("Test8")),
+                new TreeMapNode("r", NodeKind.Blob, Sha1.Hash("Test9")),
             };
 
             var list3 = list1.Merge(list2);
@@ -451,22 +451,22 @@ namespace SourceCode.Chasm.Tests
             Assert.Equal("q", list3[7].Name);
             Assert.Equal("r", list3[8].Name);
 
-            Assert.Equal(list2[1].Sha1, list3[0].Sha1);
-            Assert.Equal(list2[2].Sha1, list3[1].Sha1);
-            Assert.Equal(list2[0].Sha1, list3[2].Sha1);
-            Assert.Equal(list2[3].Sha1, list3[3].Sha1);
-            Assert.Equal(list1[1].Sha1, list3[4].Sha1);
-            Assert.Equal(list1[2].Sha1, list3[5].Sha1);
-            Assert.Equal(list2[4].Sha1, list3[6].Sha1);
-            Assert.Equal(list2[5].Sha1, list3[7].Sha1);
-            Assert.Equal(list2[6].Sha1, list3[8].Sha1);
+            Assert.Equal(list2[1].TreeRef.Sha1, list3[0].TreeRef.Sha1);
+            Assert.Equal(list2[2].TreeRef.Sha1, list3[1].TreeRef.Sha1);
+            Assert.Equal(list2[0].TreeRef.Sha1, list3[2].TreeRef.Sha1);
+            Assert.Equal(list2[3].TreeRef.Sha1, list3[3].TreeRef.Sha1);
+            Assert.Equal(list1[1].TreeRef.Sha1, list3[4].TreeRef.Sha1);
+            Assert.Equal(list1[2].TreeRef.Sha1, list3[5].TreeRef.Sha1);
+            Assert.Equal(list2[4].TreeRef.Sha1, list3[6].TreeRef.Sha1);
+            Assert.Equal(list2[5].TreeRef.Sha1, list3[7].TreeRef.Sha1);
+            Assert.Equal(list2[6].TreeRef.Sha1, list3[8].TreeRef.Sha1);
 
             var dupes = new[]
             {
-                new TreeNode(list2[0].Name, list2[0].Kind, list2[1].Sha1),
-                new TreeNode(list2[1].Name, list2[1].Kind, list2[2].Sha1),
-                new TreeNode(list2[2].Name, list2[2].Kind, list2[3].Sha1),
-                new TreeNode(list2[3].Name, list2[3].Kind, list2[0].Sha1)
+                new TreeMapNode(list2[0].Name, list2[0].TreeRef.Kind, list2[1].TreeRef.Sha1),
+                new TreeMapNode(list2[1].Name, list2[1].TreeRef.Kind, list2[2].TreeRef.Sha1),
+                new TreeMapNode(list2[2].Name, list2[2].TreeRef.Kind, list2[3].TreeRef.Sha1),
+                new TreeMapNode(list2[3].Name, list2[3].TreeRef.Kind, list2[0].TreeRef.Sha1)
             };
 
             list3 = list3.Merge(dupes);
@@ -476,23 +476,23 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeNodeMap_Delete))]
         public static void TreeNodeMap_Delete()
         {
-            var sut = new TreeNodeMap(
-                new TreeNode("a", NodeKind.Blob, Sha1.Hash("a")),
-                new TreeNode("b", NodeKind.Blob, Sha1.Hash("b")),
-                new TreeNode("c", NodeKind.Blob, Sha1.Hash("c"))
+            var sut = new TreeMap(
+                new TreeMapNode("a", NodeKind.Blob, Sha1.Hash("a")),
+                new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("b")),
+                new TreeMapNode("c", NodeKind.Blob, Sha1.Hash("c"))
             );
 
-            var removed = sut.Delete("a");
+            var removed = sut.Remove("a");
             Assert.Equal(2, removed.Count);
             Assert.Equal("b", removed[0].Name);
             Assert.Equal("c", removed[1].Name);
 
-            removed = sut.Delete("b");
+            removed = sut.Remove("b");
             Assert.Equal(2, removed.Count);
             Assert.Equal("a", removed[0].Name);
             Assert.Equal("c", removed[1].Name);
 
-            removed = sut.Delete("c");
+            removed = sut.Remove("c");
             Assert.Equal(2, removed.Count);
             Assert.Equal("a", removed[0].Name);
             Assert.Equal("b", removed[1].Name);
@@ -502,16 +502,16 @@ namespace SourceCode.Chasm.Tests
         [Fact(DisplayName = nameof(TreeNodeMap_Delete_Predicate))]
         public static void TreeNodeMap_Delete_Predicate()
         {
-            var sut = new TreeNodeMap(
-                new TreeNode("a", NodeKind.Blob, Sha1.Hash("a")),
-                new TreeNode("b", NodeKind.Blob, Sha1.Hash("b")),
-                new TreeNode("c", NodeKind.Blob, Sha1.Hash("c"))
+            var sut = new TreeMap(
+                new TreeMapNode("a", NodeKind.Blob, Sha1.Hash("a")),
+                new TreeMapNode("b", NodeKind.Blob, Sha1.Hash("b")),
+                new TreeMapNode("c", NodeKind.Blob, Sha1.Hash("c"))
             );
 
             var set = new HashSet<string>(StringComparer.Ordinal)
             { "a", "b", "d" };
 
-            var removed = sut.Delete(set.Contains);
+            var removed = sut.RemoveWhere(set.Contains);
             Assert.Single(removed);
             Assert.Equal("c", removed[0].Name);
         }
@@ -521,8 +521,8 @@ namespace SourceCode.Chasm.Tests
         public static void TreeNodeMap_IReadOnlyDictionary_Empty_GetEnumerator()
         {
             // Arrange
-            var treeNodeMap = new TreeNodeMap();
-            var readOnlyDictionary = treeNodeMap as IReadOnlyDictionary<string, TreeNode>;
+            var treeNodeMap = new TreeMap();
+            var readOnlyDictionary = treeNodeMap as IReadOnlyDictionary<string, TreeMapNode>;
 
             // Action
             var enumerator = readOnlyDictionary.GetEnumerator();
@@ -532,7 +532,7 @@ namespace SourceCode.Chasm.Tests
 
             var current = enumerator.Current;
             Assert.Null(current.Key);
-            Assert.Equal(TreeNode.Empty, current.Value);
+            Assert.Equal(TreeMapNode.Empty, current.Value);
         }
 
         [Trait("Type", "Unit")]
@@ -541,8 +541,8 @@ namespace SourceCode.Chasm.Tests
         {
             // Arrange
             var nodes = new[] { Node0, Node1 };
-            var treeNodeMap = new TreeNodeMap(nodes);
-            var readOnlyDictionary = treeNodeMap as IReadOnlyDictionary<string, TreeNode>;
+            var treeNodeMap = new TreeMap(nodes);
+            var readOnlyDictionary = treeNodeMap as IReadOnlyDictionary<string, TreeMapNode>;
 
             // Action
             var enumerator = readOnlyDictionary.GetEnumerator();

@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace SourceCode.Chasm
 {
-    [DebuggerDisplay("{" + nameof(Author) + ".ToString(),nq,ac} ({" + nameof(TreeId) + "?." + nameof(Chasm.TreeId.Sha1) + ".ToString(\"D\"),nq,ac})")]
+    [DebuggerDisplay("{" + nameof(Author) + ".ToString(),nq,ac} ({" + nameof(TreeId) + "?." + nameof(Chasm.TreeMapId.Sha1) + ".ToString(\"D\"),nq,ac})")]
     public readonly struct Commit : IEquatable<Commit>
     {
         #region Constants
@@ -33,7 +33,7 @@ namespace SourceCode.Chasm
 
         public IReadOnlyList<CommitId> Parents => _parents ?? Array.Empty<CommitId>(); // May be null due to default ctor
 
-        public TreeId? TreeId { get; }
+        public TreeMapId? TreeId { get; }
 
         public Audit Author { get; }
 
@@ -45,7 +45,7 @@ namespace SourceCode.Chasm
 
         #region De/Constructors
 
-        public Commit(IReadOnlyList<CommitId> parents, TreeId? treeId, Audit author, Audit committer, string message)
+        public Commit(IReadOnlyList<CommitId> parents, TreeMapId? treeId, Audit author, Audit committer, string message)
         {
             TreeId = treeId;
             Author = author;
@@ -117,11 +117,11 @@ namespace SourceCode.Chasm
             }
         }
 
-        public Commit(CommitId? parent, TreeId? treeId, Audit author, Audit committer, string message)
+        public Commit(CommitId? parent, TreeMapId? treeId, Audit author, Audit committer, string message)
             : this(parent.HasValue ? new[] { parent.Value } : Array.Empty<CommitId>(), treeId, author, committer, message)
         { }
 
-        public void Deconstruct(out IReadOnlyList<CommitId> parents, out TreeId? treeId, out Audit author, out Audit committer, out string message)
+        public void Deconstruct(out IReadOnlyList<CommitId> parents, out TreeMapId? treeId, out Audit author, out Audit committer, out string message)
         {
             parents = Parents;
             treeId = TreeId;

@@ -11,22 +11,22 @@ using System.Collections.Generic;
 namespace SourceCode.Chasm
 {
     /// <summary>
-    /// Represents a way to compare different <see cref="BlobId"/> values.
+    /// Represents a way to compare different <see cref="TreeMapId"/> values.
     /// </summary>
-    public abstract class BlobIdComparer : IEqualityComparer<BlobId>, IComparer<BlobId>
+    public abstract class TreeMapIdComparer : IEqualityComparer<TreeMapId>, IComparer<TreeMapId>
     {
         #region Constants
 
         /// <summary>
-        /// Gets a <see cref="BlobIdComparer"/> that compares all fields of a <see cref="BlobId"/> value.
+        /// Gets a <see cref="TreeMapIdComparer"/> that compares all fields of a <see cref="TreeMapId"/> value.
         /// </summary>
-        public static BlobIdComparer Default { get; } = new DefaultComparer();
+        public static TreeMapIdComparer Default { get; } = new DefaultComparer();
 
         #endregion
 
         #region Constructors
 
-        private BlobIdComparer()
+        private TreeMapIdComparer()
         { }
 
         #endregion
@@ -34,7 +34,7 @@ namespace SourceCode.Chasm
         #region IComparer
 
         /// <inheritdoc/>
-        public abstract int Compare(BlobId x, BlobId y);
+        public abstract int Compare(TreeMapId x, TreeMapId y);
 
         #endregion
 
@@ -42,35 +42,35 @@ namespace SourceCode.Chasm
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 
-        [Obsolete("Use GetHashCode(BlobId) to get the hash code for a BlobId.", true)]
+        [Obsolete("Use GetHashCode(TreeId) to get the hash code for a TreeId.", true)]
         public override int GetHashCode() =>
             throw new InvalidOperationException();
 
-        [Obsolete("Use Equals(BlobId, BlobId) to check two BlobId values for equality.")]
+        [Obsolete("Use Equals(TreeId, TreeId) to check two TreeId values for equality.")]
         public override bool Equals(object obj) =>
             throw new InvalidOperationException();
 
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
         /// <inheritdoc/>
-        public abstract bool Equals(BlobId x, BlobId y);
+        public abstract bool Equals(TreeMapId x, TreeMapId y);
 
         /// <inheritdoc/>
-        public abstract int GetHashCode(BlobId obj);
+        public abstract int GetHashCode(TreeMapId obj);
 
         #endregion
 
         #region Concrete
 
-        private sealed class DefaultComparer : BlobIdComparer
+        private sealed class DefaultComparer : TreeMapIdComparer
         {
             #region Methods
 
-            public override int Compare(BlobId x, BlobId y) => Sha1Comparer.Default.Compare(x.Sha1, y.Sha1);
+            public override int Compare(TreeMapId x, TreeMapId y) => Sha1Comparer.Default.Compare(x.Sha1, y.Sha1);
 
-            public override bool Equals(BlobId x, BlobId y) => Sha1Comparer.Default.Equals(x.Sha1, y.Sha1);
+            public override bool Equals(TreeMapId x, TreeMapId y) => Sha1Comparer.Default.Equals(x.Sha1, y.Sha1);
 
-            public override int GetHashCode(BlobId obj) => Sha1Comparer.Default.GetHashCode(obj.Sha1);
+            public override int GetHashCode(TreeMapId obj) => Sha1Comparer.Default.GetHashCode(obj.Sha1);
 
             #endregion
         }

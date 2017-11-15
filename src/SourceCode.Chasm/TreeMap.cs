@@ -9,29 +9,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SourceCode.Chasm
 {
     [DebuggerDisplay("{ToString(),nq,ac}")]
 #pragma warning disable CA1710 // Identifiers should have correct suffix
-    public readonly struct TreeNodeMap : IReadOnlyDictionary<string, TreeNode>, IReadOnlyList<TreeNode>, IEquatable<TreeNodeMap>
+    public readonly struct TreeMap : IReadOnlyDictionary<string, TreeMapNode>, IReadOnlyList<TreeMapNode>, IReadOnlyDictionary<string, TreeRef>, IReadOnlyList<TreeRef>, IEquatable<TreeMap>
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         #region Constants
 
         /// <summary>
-        /// A singleton representing an empty <see cref="TreeNodeMap"/> value.
+        /// A singleton representing an empty <see cref="TreeMap"/> value.
         /// </summary>
         /// <value>
         /// The empty.
         /// </value>
-        public static TreeNodeMap Empty { get; }
+        public static TreeMap Empty { get; }
 
         #endregion
 
         #region Fields
 
-        internal readonly ReadOnlyMemory<TreeNode> _nodes;
+        internal readonly ReadOnlyMemory<TreeMapNode> _nodes;
 
         #endregion
 
@@ -39,12 +40,36 @@ namespace SourceCode.Chasm
 
         public int Count => _nodes.Length;
 
-        public TreeNode this[int index]
+        TreeRef IReadOnlyList<TreeRef>.this[int index]
         {
             get
             {
                 if (_nodes.IsEmpty)
-                    return Array.Empty<TreeNode>()[index]; // Throw underlying exception
+                    return Array.Empty<TreeRef>()[index]; // Throw underlying exception
+
+                var span = _nodes.Span;
+
+                return span[index].TreeRef;
+            }
+        }
+
+        TreeRef IReadOnlyDictionary<string, TreeRef>.this[string key]
+        {
+            get
+            {
+                if (!TryGetValue(key, out var node))
+                    throw new KeyNotFoundException(nameof(key));
+
+                return node.TreeRef;
+            }
+        }
+
+        public TreeMapNode this[int index]
+        {
+            get
+            {
+                if (_nodes.IsEmpty)
+                    return Array.Empty<TreeMapNode>()[index]; // Throw underlying exception
 
                 var span = _nodes.Span;
 
@@ -52,7 +77,7 @@ namespace SourceCode.Chasm
             }
         }
 
-        public TreeNode this[string key]
+        public TreeMapNode this[string key]
         {
             get
             {
@@ -67,7 +92,7 @@ namespace SourceCode.Chasm
 
         #region Constructors
 
-        public TreeNodeMap(params TreeNode[] nodes)
+        public TreeMap(params TreeMapNode[] nodes)
         {
             // We choose to coerce empty & null, so de/serialization round-trips with fidelity
             if (nodes == null || nodes.Length == 0)
@@ -80,7 +105,7 @@ namespace SourceCode.Chasm
             _nodes = DistinctSort(nodes, false);
         }
 
-        public TreeNodeMap(IEnumerable<TreeNode> nodes)
+        public TreeMap(IEnumerable<TreeMapNode> nodes)
         {
             // We choose to coerce empty & null, so de/serialization round-trips with fidelity
             if (nodes == null)
@@ -89,11 +114,19 @@ namespace SourceCode.Chasm
                 return;
             }
 
+            var copy = nodes.ToArray();
+
+            if (copy == null)
+            {
+                _nodes = default;
+                return;
+            }
+
             // Sort & de-duplicate
-            _nodes = DistinctSort(nodes);
+            _nodes = DistinctSort(copy, true);
         }
 
-        public TreeNodeMap(ICollection<TreeNode> nodes)
+        public TreeMap(ICollection<TreeMapNode> nodes)
         {
             // We choose to coerce empty & null, so de/serialization round-trips with fidelity
             if (nodes == null || nodes.Count == 0)
@@ -103,14 +136,14 @@ namespace SourceCode.Chasm
             }
 
             // Copy
-            var array = new TreeNode[nodes.Count];
+            var array = new TreeMapNode[nodes.Count];
             nodes.CopyTo(array, 0);
 
             // Sort & de-duplicate
             _nodes = DistinctSort(array, true);
         }
 
-        private TreeNodeMap(ReadOnlyMemory<TreeNode> nodes)
+        private TreeMap(bool sentinel, ReadOnlyMemory<TreeMapNode> nodes)
         {
             _nodes = nodes;
         }
@@ -119,9 +152,9 @@ namespace SourceCode.Chasm
 
         #region Methods
 
-        private static ReadOnlyMemory<TreeNode> Merge(TreeNodeMap first, TreeNodeMap second)
+        private static ReadOnlyMemory<TreeMapNode> Merge(TreeMap first, TreeMap second)
         {
-            var newArray = new TreeNode[first.Count + second.Count];
+            var newArray = new TreeMapNode[first.Count + second.Count];
 
             var i = 0;
             var aIndex = 0;
@@ -161,62 +194,64 @@ namespace SourceCode.Chasm
                 }
             }
 
-            return new ReadOnlyMemory<TreeNode>(newArray, 0, i);
+            return new ReadOnlyMemory<TreeMapNode>(newArray, 0, i);
         }
 
-        public TreeNodeMap Merge(TreeNode node)
+        public TreeMap Merge(TreeMapNode node)
         {
-            if (_nodes.IsEmpty) return new TreeNodeMap(node);
+            if (_nodes.IsEmpty) return new TreeMap(node);
 
             var index = IndexOf(node.Name);
 
             var span = _nodes.Span;
 
-            TreeNode[] array;
+            TreeMapNode[] array;
             if (index >= 0)
             {
-                array = new TreeNode[_nodes.Length];
+                array = new TreeMapNode[_nodes.Length];
                 span.CopyTo(array);
                 array[index] = node;
             }
             else
             {
                 index = ~index;
-                array = new TreeNode[_nodes.Length + 1];
+                array = new TreeMapNode[_nodes.Length + 1];
 
                 var j = 0;
                 for (var i = 0; i < array.Length; i++)
                     array[i] = i == index ? node : span[j++];
             }
 
-            return new TreeNodeMap(array);
+            return new TreeMap(array);
         }
 
-        public TreeNodeMap Delete(Func<string, bool> predicate)
+        public TreeMap Merge(string name, TreeRef treeRef) => Merge(new TreeMapNode(name, treeRef));
+
+        public TreeMap Merge(string name, NodeKind kind, Sha1 sha1) => Merge(new TreeMapNode(name, kind, sha1));
+
+        public TreeMap Merge(TreeMap nodes)
         {
-            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            if (_nodes.Length == 0) return this;
-
-            var copy = new TreeNode[_nodes.Length - 1];
-            var span = _nodes.Span;
-            var j = 0;
-            for (var i = 0; i < _nodes.Length; i++)
-            {
-                if (!predicate(span[i].Name))
-                    copy[j++] = span[i];
-            }
-
-            if (j == _nodes.Length)
+            if (nodes == default || nodes.Count == 0)
                 return this;
 
-            return new TreeNodeMap(new ReadOnlyMemory<TreeNode>(copy, 0, j));
+            if (_nodes.IsEmpty || _nodes.Length == 0)
+                return nodes;
+
+            var set = Merge(this, nodes);
+
+            var tree = new TreeMap(true, set);
+            return tree;
         }
 
-        public TreeNodeMap Delete(string key)
+        public TreeMap Merge(ICollection<TreeMapNode> nodes) => Merge(new TreeMap(nodes));
+
+        public TreeMap Merge(IEnumerable<TreeMapNode> nodes) => Merge(new TreeMap(nodes));
+
+        public TreeMap Remove(string key)
         {
             if (_nodes.Length == 0) return this;
 
-            var copy = new TreeNode[_nodes.Length - 1];
+            var copy = new TreeMapNode[_nodes.Length - 1];
             var span = _nodes.Span;
             var found = false;
             for (var i = 0; i < _nodes.Length; i++)
@@ -234,36 +269,29 @@ namespace SourceCode.Chasm
             }
 
             if (found)
-                return new TreeNodeMap(new ReadOnlyMemory<TreeNode>(copy));
+                return new TreeMap(true, new ReadOnlyMemory<TreeMapNode>(copy));
 
             return this;
         }
 
-        public TreeNodeMap Merge(TreeNodeMap nodes)
+        public TreeMap RemoveWhere(Func<string, bool> predicate)
         {
-            if (nodes == default || nodes.Count == 0)
+            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+            if (_nodes.Length == 0) return this;
+
+            var copy = new TreeMapNode[_nodes.Length - 1];
+            var span = _nodes.Span;
+            var j = 0;
+            for (var i = 0; i < _nodes.Length; i++)
+            {
+                if (!predicate(span[i].Name))
+                    copy[j++] = span[i];
+            }
+
+            if (j == _nodes.Length)
                 return this;
 
-            if (_nodes.IsEmpty || _nodes.Length == 0)
-                return nodes;
-
-            var set = Merge(this, nodes);
-
-            var tree = new TreeNodeMap(set);
-            return tree;
-        }
-
-        public TreeNodeMap Merge(ICollection<TreeNode> nodes)
-        {
-            if (nodes == null || nodes.Count == 0)
-                return this;
-
-            if (_nodes.IsEmpty)
-                return new TreeNodeMap(nodes);
-
-            var set = Merge(this, new TreeNodeMap(nodes));
-            var tree = new TreeNodeMap(set);
-            return tree;
+            return new TreeMap(true, new ReadOnlyMemory<TreeMapNode>(copy, 0, j));
         }
 
         public int IndexOf(string key)
@@ -292,7 +320,7 @@ namespace SourceCode.Chasm
 
         public bool ContainsKey(string key) => IndexOf(key) >= 0;
 
-        public bool TryGetValue(string key, out TreeNode value)
+        public bool TryGetValue(string key, out TreeMapNode value)
         {
             value = default;
 
@@ -323,14 +351,25 @@ namespace SourceCode.Chasm
             return false;
         }
 
-        public bool TryGetValue(string key, NodeKind kind, out TreeNode value)
+        bool IReadOnlyDictionary<string, TreeRef>.TryGetValue(string key, out TreeRef value)
+        {
+            if (TryGetValue(key, out var node))
+            {
+                value = node.TreeRef;
+                return true;
+            }
+            value = default;
+            return false;
+        }
+
+        public bool TryGetValue(string key, NodeKind kind, out TreeMapNode value)
         {
             value = default;
 
             if (!TryGetValue(key, out var node))
                 return false;
 
-            if (node.Kind != kind)
+            if (node.TreeRef.Kind != kind)
                 return false;
 
             value = node;
@@ -341,20 +380,20 @@ namespace SourceCode.Chasm
 
         #region Helpers
 
-        private static ReadOnlyMemory<TreeNode> DistinctSort(TreeNode[] array, bool alreadyCopied)
+        private static ReadOnlyMemory<TreeMapNode> DistinctSort(TreeMapNode[] array, bool alreadyCopied)
         {
             Debug.Assert(array != null); // Already checked at callsites
 
             // Optimize for common cases 0, 1, 2, N
-            ReadOnlyMemory<TreeNode> result;
+            ReadOnlyMemory<TreeMapNode> result;
             switch (array.Length)
             {
                 case 0:
                     return default;
 
                 case 1:
-                    // Always copy. The callsite may change the array after creating the TreeNodeMap.
-                    result = new TreeNode[1] { array[0] };
+                    // Always copy. The callsite may change the array after creating the TreeMap.
+                    result = new TreeMapNode[1] { array[0] };
                     return result;
 
                 case 2:
@@ -362,15 +401,15 @@ namespace SourceCode.Chasm
                     if (StringComparer.Ordinal.Equals(array[0].Name, array[1].Name))
                     {
                         // If it's a complete duplicate, silently skip
-                        if (TreeNodeComparer.Default.Equals(array[0], array[1]))
-                            result = new TreeNode[1] { array[0] };
+                        if (TreeMapNodeComparer.Default.Equals(array[0], array[1]))
+                            result = new TreeMapNode[1] { array[0] };
                         else
                             throw CreateDuplicateException(array[0]);
                     }
                     // In the wrong order
-                    else if (TreeNodeComparer.Default.Compare(array[0], array[1]) > 0)
+                    else if (TreeMapNodeComparer.Default.Compare(array[0], array[1]) > 0)
                     {
-                        result = new TreeNode[2] { array[1], array[0] };
+                        result = new TreeMapNode[2] { array[1], array[0] };
                     }
                     else if (alreadyCopied)
                     {
@@ -378,7 +417,7 @@ namespace SourceCode.Chasm
                     }
                     else
                     {
-                        result = new TreeNode[2] { array[0], array[1] };
+                        result = new TreeMapNode[2] { array[0], array[1] };
                     }
                     return result;
 
@@ -388,12 +427,12 @@ namespace SourceCode.Chasm
                     var nodes = array;
                     if (!alreadyCopied)
                     {
-                        nodes = new TreeNode[array.Length];
+                        nodes = new TreeMapNode[array.Length];
                         array.CopyTo(nodes, 0);
                     }
 
                     // Sort: Delegate dispatch faster than interface (https://github.com/dotnet/coreclr/pull/8504)
-                    Array.Sort(nodes, TreeNodeComparer.Default.Compare);
+                    Array.Sort(nodes, TreeMapNodeComparer.Default.Compare);
 
                     // Distinct
                     var j = 1;
@@ -403,7 +442,7 @@ namespace SourceCode.Chasm
                         if (StringComparer.Ordinal.Equals(nodes[i - 1].Name, nodes[i].Name))
                         {
                             // If it's a complete duplicate, silently skip
-                            if (TreeNodeComparer.Default.Equals(nodes[i - 1], nodes[i]))
+                            if (TreeMapNodeComparer.Default.Equals(nodes[i - 1], nodes[i]))
                                 continue;
 
                             throw CreateDuplicateException(nodes[0]);
@@ -411,24 +450,12 @@ namespace SourceCode.Chasm
                         nodes[j++] = nodes[i]; // Increment target index if distinct
                     }
 
-                    var span = new ReadOnlyMemory<TreeNode>(nodes, 0, j);
+                    var span = new ReadOnlyMemory<TreeMapNode>(nodes, 0, j);
                     return span;
             }
 
-            ArgumentException CreateDuplicateException(TreeNode node)
-                => new ArgumentException($"Duplicate {nameof(TreeNode)} arguments passed to {nameof(TreeNodeMap)}: ({node})");
-        }
-
-        private static ReadOnlyMemory<TreeNode> DistinctSort(IEnumerable<TreeNode> nodes)
-        {
-            Debug.Assert(nodes != null); // Already checked at callsites
-
-            if (!System.Linq.Enumerable.Any(nodes)) return default;
-
-            // If callsite did not already copy, do so before mutating
-            var array = new List<TreeNode>(nodes).ToArray();
-
-            return DistinctSort(array, true);
+            ArgumentException CreateDuplicateException(TreeMapNode node)
+                => new ArgumentException($"Duplicate {nameof(TreeMapNode)} arguments passed to {nameof(TreeMap)}: ({node})");
         }
 
         #endregion
@@ -442,64 +469,85 @@ namespace SourceCode.Chasm
                 if (_nodes.IsEmpty)
                     yield break;
 
-                // TODO: Is Span safe under yield?
-                var span = _nodes.Span;
-
                 for (var i = 0; i < _nodes.Length; i++)
-                    yield return span[i].Name;
+                    yield return _nodes.Span[i].Name;
             }
         }
 
-        public IEnumerable<TreeNode> Values
+        public IEnumerable<TreeMapNode> Values
         {
             get
             {
                 if (_nodes.IsEmpty)
                     yield break;
 
-                // TODO: Is Span safe under yield?
-                var span = _nodes.Span;
-
                 for (var i = 0; i < _nodes.Length; i++)
-                    yield return span[i];
+                    yield return _nodes.Span[i];
             }
         }
 
-        public IEnumerator<TreeNode> GetEnumerator() => Values.GetEnumerator();
+        IEnumerable<TreeRef> IReadOnlyDictionary<string, TreeRef>.Values
+        {
+            get
+            {
+                if (_nodes.IsEmpty)
+                    yield break;
+
+                for (var i = 0; i < _nodes.Length; i++)
+                    yield return _nodes.Span[i].TreeRef;
+            }
+        }
+
+        public IEnumerator<TreeMapNode> GetEnumerator() => Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IEnumerator<KeyValuePair<string, TreeNode>> IEnumerable<KeyValuePair<string, TreeNode>>.GetEnumerator()
+        IEnumerator<TreeRef> IEnumerable<TreeRef>.GetEnumerator()
         {
             if (_nodes.IsEmpty)
                 yield break;
 
-            // TODO: Is Span safe under yield?
-            var span = _nodes.Span;
+            for (var i = 0; i < _nodes.Length; i++)
+                yield return _nodes.Span[i].TreeRef;
+        }
+
+        IEnumerator<KeyValuePair<string, TreeMapNode>> IEnumerable<KeyValuePair<string, TreeMapNode>>.GetEnumerator()
+        {
+            if (_nodes.IsEmpty)
+                yield break;
 
             for (var i = 0; i < _nodes.Length; i++)
-                yield return new KeyValuePair<string, TreeNode>(span[i].Name, span[i]);
+                yield return new KeyValuePair<string, TreeMapNode>(_nodes.Span[i].Name, _nodes.Span[i]);
+        }
+
+        IEnumerator<KeyValuePair<string, TreeRef>> IEnumerable<KeyValuePair<string, TreeRef>>.GetEnumerator()
+        {
+            if (_nodes.IsEmpty)
+                yield break;
+
+            for (var i = 0; i < _nodes.Length; i++)
+                yield return new KeyValuePair<string, TreeRef>(_nodes.Span[i].Name, _nodes.Span[i].TreeRef);
         }
 
         #endregion
 
         #region IEquatable
 
-        public bool Equals(TreeNodeMap other) => TreeNodeMapComparer.Default.Equals(this, other);
+        public bool Equals(TreeMap other) => TreeMapComparer.Default.Equals(this, other);
 
         public override bool Equals(object obj)
-            => obj is TreeNodeMap tree
-            && TreeNodeMapComparer.Default.Equals(this, tree);
+            => obj is TreeMap tree
+            && TreeMapComparer.Default.Equals(this, tree);
 
-        public override int GetHashCode() => TreeNodeMapComparer.Default.GetHashCode(this);
+        public override int GetHashCode() => TreeMapComparer.Default.GetHashCode(this);
 
         #endregion
 
         #region Operators
 
-        public static bool operator ==(TreeNodeMap x, TreeNodeMap y) => TreeNodeMapComparer.Default.Equals(x, y);
+        public static bool operator ==(TreeMap x, TreeMap y) => TreeMapComparer.Default.Equals(x, y);
 
-        public static bool operator !=(TreeNodeMap x, TreeNodeMap y) => !(x == y);
+        public static bool operator !=(TreeMap x, TreeMap y) => !(x == y);
 
         public override string ToString() => $"{nameof(Count)}: {_nodes.Length}";
 

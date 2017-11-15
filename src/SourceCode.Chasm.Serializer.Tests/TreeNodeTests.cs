@@ -18,7 +18,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_WriteRead_NullTreeNodeMap(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap();
+            var expected = new TreeMap();
 
             using (var seg = ser.Serialize(expected))
             {
@@ -33,7 +33,7 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_WriteRead_EmptyTreeNodeMap(IChasmSerializer ser)
         {
-            var expected = new TreeNodeMap(new TreeNode[0]);
+            var expected = new TreeMap(new TreeMapNode[0]);
 
             using (var seg = ser.Serialize(expected))
             {
@@ -48,10 +48,10 @@ namespace SourceCode.Chasm.IO.Tests
         [ClassData(typeof(TestData))]
         public static void ChasmSerializer_WriteRead_TreeNodeMap(IChasmSerializer ser)
         {
-            var node0 = new TreeNode("a", NodeKind.Blob, Sha1.Hash("abc"));
-            var node1 = new TreeNode("b", NodeKind.Tree, Sha1.Hash("def"));
-            var node2 = new TreeNode("c", NodeKind.Tree, Sha1.Hash("hij"));
-            var expected = new TreeNodeMap(node0, node1, node2);
+            var node0 = new TreeMapNode("a", NodeKind.Blob, Sha1.Hash("abc"));
+            var node1 = new TreeMapNode("b", NodeKind.Map, Sha1.Hash("def"));
+            var node2 = new TreeMapNode("c", NodeKind.Map, Sha1.Hash("hij"));
+            var expected = new TreeMap(node0, node1, node2);
 
             using (var seg = ser.Serialize(expected))
             {
